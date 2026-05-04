@@ -81,17 +81,85 @@ Then double-click in order:
 | 2 | `Download_Models.bat` | Downloads model weights from GitHub Releases |
 | 3 | `Launch_GUI.bat` | Opens the GUI |
 
-### Running
+### Pipeline Options
 
-1. **Config** — select `configs/yolo11_demo.yaml`
-2. **Video** — pick any `.mp4` / `.avi` file
-3. **Prompt** — enter object classes to detect:
-   ```
-   hand, cookware, lid, dishware, utensil, appliance, cabinet, container
-   ```
-4. Click **Start**
+There are four inference pipelines available, each with different speed/accuracy trade-offs. Select the corresponding config in the GUI.
 
-The bundled model (`kitchen_coarse_v2.pt`) is a YOLO11s-seg fine-tuned on Kitchen VISOR with 8 coarse classes (mAP50 ≈ 44). You can swap in any YOLO11-seg `.pt` file via the **YOLO11 model** field in the GUI.
+---
+
+#### Option 1 — YOLO11-seg (Recommended)
+
+**Config:** `configs/yolo11_demo.yaml`  
+**Speed:** ~20 ms/frame on RTX 4060  
+**Models needed:** `models/kitchen_coarse_v2.pt` (downloaded automatically)
+
+YOLO11s-seg runs detection and segmentation in a single forward pass. It is the fastest and most stable option for real-time use. The bundled `kitchen_coarse_v2.pt` is fine-tuned on Kitchen VISOR (mAP50 ≈ 44).
+
+**Prompt for the bundled kitchen model:**
+```
+hand, cookware, lid, dishware, utensil, appliance, cabinet, container
+```
+> These names exactly match the 8 training classes. YOLO11-seg ignores the prompt for detection — it always detects all trained classes — but the prompt is used for label normalisation and tracking. Using the exact class names gives the best tracking stability.
+
+To use a different `.pt` file, leave the config as-is and pick your model via the **YOLO11 model (.pt)** field in the GUI.
+
+---
+
+#### Option 2 — GroundingDINO + SAM2
+
+**Config:** `configs/prompt_segment_gdino15_edge_rescue.yaml`  
+**Speed:** ~2–4 s/frame  
+**Models needed:** `models/groundingdino_swint_ogc.pth`, `models/sam2/`
+
+Open-vocabulary pipeline. GroundingDINO detects objects from free-form text prompts; SAM2 produces pixel-level masks. Highest quality masks but too slow for real-time use. Best for offline annotation or generating training data.
+
+**Example prompt:**
+```
+hand, pot, pan, lid, bowl, plate, spoon, knife, cup
+```
+> You can use arbitrary natural-language object names — no fixed class list.
+
+---
+
+#### Option 3 — YOLO-World + SAM2
+
+**Config:** `configs/prompt_segment_demo.yaml` (set `segmenter.backend: sam2`, `detector.backend: yolo_world`)  
+**Speed:** ~300–500 ms/frame  
+**Models needed:** `models/yolov8s-worldv2.pt`, `models/sam2/`
+
+YOLO-World handles open-vocabulary detection much faster than GroundingDINO; SAM2 provides the segmentation masks. A middle ground between speed and prompt flexibility. Detection accuracy is lower than GroundingDINO without fine-tuning.
+
+**Example prompt:**
+```
+hand, pot, pan, lid, bowl, plate, spoon, knife
+```
+
+---
+
+#### Option 4 — YOLO-World + SegFormer + SAM2 (Full Pipeline)
+
+**Config:** `configs/prompt_segment_demo.yaml`  
+**Speed:** ~300–500 ms/frame  
+**Models needed:** `models/yolov8s-worldv2.pt`, `models/sam2/`, `models/segformer_b0_ade/`, `models/mediapipe/`
+
+The complete pipeline. SegFormer adds semantic scene/background segmentation (countertop, wall, floor, etc.) to separate foreground objects from background. MediaPipe hand detection enables hand-triggered object persistence. GroundingDINO runs as a rescue detector every 16 frames to recover lost objects.
+
+This is the most accurate but also the heaviest option. Recommended only if you need full scene understanding.
+
+**Example prompt (foreground objects only — scene labels are handled internally):**
+```
+hand, pot, pan, lid, bowl, plate, spoon, knife, cup, bottle
+```
+
+---
+
+### Steps to Run
+
+1. Launch `Launch_GUI.bat`
+2. **Config** — select one of the configs above
+3. **Video** — pick any `.mp4` / `.avi` file
+4. **Prompt** — enter object names (see examples above)
+5. Click **Start**
 
 ---
 
