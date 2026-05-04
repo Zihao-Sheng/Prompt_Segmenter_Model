@@ -78,8 +78,18 @@ Then double-click in order:
 | Step | Script | What it does |
 |------|--------|--------------|
 | 1 | `Install_Dependencies.bat` | Creates `.venv`, installs PyTorch (CUDA) + all packages |
-| 2 | `Download_Models.bat` | Downloads model weights from GitHub Releases |
+| 2 | `Download_Models.bat` | Downloads model weights (prompts you to choose a pipeline) |
 | 3 | `Launch_GUI.bat` | Opens the GUI |
+
+When running `Download_Models.bat`, select the pipeline that matches the config you want to use:
+
+| Input | Pipeline | Download size |
+|-------|----------|--------------|
+| `yolo11` | YOLO11-seg only *(default, recommended)* | ~26 MB |
+| `gdino` | GroundingDINO + SAM2 | ~820 MB |
+| `yolo_world` | YOLO-World + SAM2 | ~255 MB |
+| `full` | YOLO-World + SegFormer + SAM2 + MediaPipe | ~285 MB |
+| `all` | Everything | ~1.1 GB |
 
 ### Pipeline Options
 
