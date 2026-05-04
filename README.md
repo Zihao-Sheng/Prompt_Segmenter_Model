@@ -16,6 +16,7 @@ A first-person video object segmentation tool built for kitchen and workflow mon
 
 - [Quick Start](#quick-start)
 - [Directory Structure](#directory-structure)
+- [Datasets](#datasets)
 - [Research Background](#hangar-maintenance-workflow-monitoring-project-research-progress-summary)
 
 ---
@@ -170,6 +171,17 @@ hand, pot, pan, lid, bowl, plate, spoon, knife, cup, bottle
 3. **Video** — pick any `.mp4` / `.avi` file
 4. **Prompt** — enter object names (see examples above)
 5. Click **Start**
+
+---
+
+## Datasets
+
+| Dataset | Used for | Link |
+|---------|----------|------|
+| **Kitchen VISOR** | Training YOLO11-seg (mask annotations for 8 kitchen object classes) | [datasetninja.com/epic-kitchens-visor](https://datasetninja.com/epic-kitchens-visor) |
+| **EGTEA Gaze+** | Inference testing (first-person kitchen activity videos) | [cbs.ic.gatech.edu/fpv](https://cbs.ic.gatech.edu/fpv/) |
+
+The VISOR annotations were converted to YOLO segmentation format using `scripts/visor_to_yolo.py`, then remapped to 8 coarse classes (appliance, cabinet, container, cookware, dishware, hand, lid, utensil) using `scripts/remap_to_coarse.py`.
 
 ---
 
