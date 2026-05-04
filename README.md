@@ -1,3 +1,43 @@
+# Prompt Video Segmenter
+
+## Quick Start
+
+### Prerequisites
+- **Python 3.12+** — [python.org/downloads](https://www.python.org/downloads/) (check "Add python.exe to PATH" during install)
+- **NVIDIA GPU** with driver supporting CUDA 12.8+ (driver 525+ recommended)
+- **~6 GB free disk space**
+
+> No NVIDIA GPU? The app will fall back to CPU automatically — slower but functional.
+
+### Installation
+
+```bash
+git clone https://github.com/Zihao-Sheng/Prompt_Segmenter_Model.git
+cd Prompt_Segmenter_Model
+```
+
+Then double-click in order:
+
+| Step | Script | What it does |
+|------|--------|--------------|
+| 1 | `Install_Dependencies.bat` | Creates `.venv`, installs PyTorch (CUDA) + all packages |
+| 2 | `Download_Models.bat` | Downloads model weights from GitHub Releases |
+| 3 | `Launch_GUI.bat` | Opens the GUI |
+
+### Running
+
+1. **Config** — select `configs/yolo11_demo.yaml`
+2. **Video** — pick any `.mp4` / `.avi` file
+3. **Prompt** — enter object classes to detect:
+   ```
+   hand, cookware, lid, dishware, utensil, appliance, cabinet, container
+   ```
+4. Click **Start**
+
+The bundled model (`kitchen_coarse_v2.pt`) is a YOLO11s-seg fine-tuned on Kitchen VISOR with 8 coarse classes (mAP50 ≈ 44). You can swap in any YOLO11-seg `.pt` file via the **YOLO11 model** field in the GUI.
+
+---
+
 # Hangar Maintenance Workflow Monitoring Project: Research Progress Summary
 
 > **Purpose**: This document summarizes the current research progress for teammates. Since the partner has not yet provided a real hangar maintenance dataset, the current work uses public first-person workflow datasets and existing vision models to test whether real-time workflow monitoring is technically feasible, and to identify the main bottlenecks before moving to the actual maintenance scenario.
