@@ -1,5 +1,62 @@
 # Prompt Video Segmenter
 
+A first-person video object segmentation tool built for kitchen and workflow monitoring scenarios. It supports multiple detector and segmenter backends, with a focus on the YOLO11-seg pipeline fine-tuned on Kitchen VISOR data.
+
+**Key features:**
+- GUI-based video processing with real-time preview
+- Pluggable detector backends: YOLO11-seg (recommended), GroundingDINO, YOLO-World, RF-DETR
+- Pluggable segmenter backends: SAM2, YOLO11-seg passthrough
+- ByteTrack multi-object tracking + temporal label smoothing
+- COCO-format annotation export
+- Separate training GUI for fine-tuning YOLO11-seg on custom datasets
+
+---
+
+## Table of Contents
+
+- [Quick Start](#quick-start)
+- [Directory Structure](#directory-structure)
+- [Research Background](#hangar-maintenance-workflow-monitoring-project-research-progress-summary)
+
+---
+
+## Directory Structure
+
+```
+Prompt_Segmenter_Model/
+├── configs/                    # YAML config files for inference and training
+│   ├── yolo11_demo.yaml        # Recommended: YOLO11-seg only, no heavy models needed
+│   ├── prompt_segment_demo.yaml# Full pipeline (GroundingDINO + SAM2 + SegFormer)
+│   └── train_kitchen_coarse.yaml  # Training config for 8-class coarse model
+│
+├── models/                     # Model weights (downloaded via Download_Models.bat)
+│   ├── kitchen_coarse_v2.pt    # Fine-tuned YOLO11s-seg, 8 kitchen classes
+│   ├── sam2/                   # SAM2 checkpoint and config
+│   ├── segformer_b0_ade/       # SegFormer scene segmentation model
+│   ├── mediapipe/              # Hand landmark model
+│   └── ...
+│
+├── scripts/                    # Utility scripts
+│   ├── download_models.py      # Downloads weights from GitHub Releases
+│   └── visor_to_yolo.py        # Converts VISOR annotations to YOLO format
+│
+├── src/                        # Source code
+│   ├── gui_app.py              # Main GUI entry point (launched by Launch_GUI.bat)
+│   ├── detection/              # Detector backends (YOLO11, GroundingDINO, etc.)
+│   ├── segmentation/           # Segmenter backends (SAM2, YOLO11 passthrough)
+│   ├── tracking/               # ByteTrack + label smoothing + hand trigger
+│   ├── pipeline/               # Frame processing pipeline and export
+│   ├── gui/                    # Training GUI
+│   └── core/                   # Config loading, types, utilities
+│
+├── Launch_GUI.bat              # Start the inference GUI
+├── Launch_Training_Tool.bat    # Start the training GUI
+├── Install_Dependencies.bat    # Set up venv and install packages
+└── Download_Models.bat         # Download model weights from GitHub Releases
+```
+
+---
+
 ## Quick Start
 
 ### Prerequisites
