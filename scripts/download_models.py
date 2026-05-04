@@ -13,7 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 # Fill in the GitHub Release download URLs after you create the release.
 # Format: (destination_path_relative_to_project, url, expected_sha256_or_None)
 # ---------------------------------------------------------------------------
-GITHUB_RELEASE_BASE = "https://github.com/YOUR_USERNAME/YOUR_REPO/releases/download/v1.0"
+GITHUB_RELEASE_BASE = "https://github.com/Zihao-Sheng/Prompt_Segmenter_Model/releases/download/v1.0"
 
 MODELS: list[tuple[str, str, str | None]] = [
     # Trained coarse kitchen model (required for yolo11_demo.yaml)
