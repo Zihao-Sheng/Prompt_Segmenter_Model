@@ -10,6 +10,10 @@ A first-person video object segmentation tool built for kitchen and workflow mon
 - COCO-format annotation export
 - Separate training GUI for fine-tuning YOLO11-seg on custom datasets
 
+## Demo
+
+<video src="annotated_video.mp4" controls width="100%"></video>
+
 ---
 
 ## Table of Contents
