@@ -1,0 +1,29 @@
+detector:
+  backend: yolo11_seg
+  yolo11_seg_model: models/kitchen_coarse_v2.pt
+  confidence_threshold: 0.25
+  device: auto
+
+segmenter:
+  backend: yolo11_seg
+
+runtime:
+  processing_mode: balanced
+  frame_stride: 2
+  use_byte_tracker: true
+  use_label_smoothing: true
+  label_smoothing_window: 8
+  use_memory_recovery: false
+  memory_max_recovery_frames: 0
+  use_secondary_region_detector: false
+  secondary_memory_enabled: false
+
+visualization:
+  draw_boxes: true
+  draw_masks: true
+  draw_labels: true
+  write_annotated_video: true
+
+export:
+  export_coco: true
+  save_mask_pngs: false

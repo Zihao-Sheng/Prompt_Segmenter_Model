@@ -1,0 +1,29 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Model weights (host on GitHub Releases separately)
+models/
+*.pt
+*.pth
+*.onnx
+*.engine
+
+# Training outputs
+runs/
+outputs/
+
+# Ultralytics config cache
+Ultralytics/
+
+# Large datasets
+datasets/
+
+# OS
+.DS_Store
+Thumbs.db

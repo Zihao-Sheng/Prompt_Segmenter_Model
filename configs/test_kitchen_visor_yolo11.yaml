@@ -1,0 +1,164 @@
+detector:
+  backend: yolo11_seg
+  yolo11_seg_model: runs/segment/runs/kitchen_visor/nano_5k_v1/weights/best.pt
+  device: auto
+  confidence_threshold: 0.25
+  yolo11_seg_iou_threshold: 0.45
+
+segmenter:
+  backend: yolo11_seg
+  yolo_seg_acceleration: none          # 不对 fine-tuned 模型做 TRT/ONNX export
+  min_mask_area: 100
+
+runtime:
+  frame_stride: 3
+  output_dir: outputs
+
+  # ── ByteTracker ────────────────────────────────────────────
+  use_byte_tracker: true
+  tracker_activation_threshold: 0.20
+  tracker_lost_buffer: 40
+  tracker_matching_threshold: 0.55
+  tracker_min_consecutive_frames: 1
+
+  # ── coarse label groups（含 fine-tuned 模型的子类）────────
+  coarse_tracking_labels_enabled: true
+  coarse_tracking_label_groups:
+    hand:
+      - hand
+      - hand:left
+      - hand:right
+    cookware:
+      - cookware:pan
+      - cookware:pot
+      - cookware:colander
+      - cookware:blender
+      - cookware:slow_cooker
+      - cookware:food_processor
+      - cookware:masher
+      - cookware:juicer
+      - cookware:presser
+    lid:
+      - lid
+    dishware:
+      - dishware:plate
+      - dishware:bowl
+      - dishware:cup
+      - dishware:glass
+      - dishware:tray
+      - dishware:teapot
+    utensil:
+      - utensil:fork
+      - utensil:knife
+      - utensil:spoon
+      - utensil:spatula
+      - utensil:ladle
+      - utensil:tongs
+      - utensil:whisk
+      - utensil:chopstick
+      - utensil:cutlery
+      - utensil:grater
+      - utensil:scissors
+      - utensil:peeler
+      - utensil:pizza_cutter
+      - utensil:slicer
+      - utensil:rolling_pin
+      - utensil:pestle
+      - utensil:brush
+      - utensil:chopping_board
+      - utensil:thermometer
+      - utensil:bottle_opener
+      - utensil:funnel
+      - utensil:rest
+    cabinet:
+      - cabinet:cupboard
+      - cabinet:drawer
+      - cabinet:shelf
+    container:
+      - container:bottle
+      - container:jar
+      - container:jug
+      - container:can
+      - container:box
+      - container:generic
+      - container:bag
+      - container:basket
+      - container:package
+    appliance:
+      - appliance:oven
+      - appliance:microwave
+      - appliance:fridge
+      - appliance:freezer
+      - appliance:toaster
+      - appliance:kettle
+      - appliance:dishwasher
+      - appliance:scale
+      - appliance:coffee_maker
+      - appliance:washing_machine
+      - appliance:sous_vide
+
+  # ── Confidence thresholds ──────────────────────────────────
+  low_confidence_new_track_filter_enabled: true
+  low_confidence_new_track_min_confidence: 0.25
+  new_track_min_confidence_by_coarse_label:
+    cookware: 0.30
+    dishware: 0.30
+    utensil: 0.35
+    hand: 0.25
+
+  # ── Label smoothing ────────────────────────────────────────
+  use_label_smoothing: true
+  label_smoothing_window: 8
+  label_smoothing_flip_streak_threshold: 3
+
+  # ── Persistence ────────────────────────────────────────────
+  persistence_enabled: true
+  persistence_labels:
+    - hand
+    - cookware
+    - lid
+    - dishware
+    - utensil
+  persistence_max_frames: 3
+  hand_persistence_max_frames: 5
+  persistence_min_stable_observations: 2
+  persistence_min_confidence: 0.20
+  persistence_confidence_decay: 0.92
+  object_persistence_confirmed_frames: 2
+  hand_persistence_confirmed_frames: 4
+
+  # ── 关闭不需要的子系统 ─────────────────────────────────────
+  use_hand_trigger: false
+  use_memory_recovery: false
+  use_secondary_region_detector: false
+  secondary_memory_enabled: false
+  use_uncovered_region_redetect: false
+  use_groundingdino_rescue: false
+  batch_inference_enabled: false
+
+  tracker_recent_reassign_enabled: true
+  tracker_recent_reassign_labels:
+    - hand
+    - cookware
+    - dishware
+    - utensil
+    - lid
+  tracker_recent_reassign_iou_threshold: 0.35
+  tracker_recent_reassign_max_frame_gap: 4
+
+  cross_group_bbox_iou_threshold: 0.60
+  cross_group_mask_iou_threshold: 0.50
+  cross_group_containment_threshold: 0.70
+  cookware_conflict_resolution_enabled: true
+  cookware_conflict_iou_threshold: 0.35
+  timing_warmup_frames: 1
+
+visualization:
+  draw_boxes: true
+  draw_masks: true
+  draw_labels: true
+  write_annotated_video: true
+
+export:
+  export_coco: true
+  save_mask_pngs: false

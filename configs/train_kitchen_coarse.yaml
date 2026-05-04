@@ -1,0 +1,33 @@
+# Kitchen VISOR Coarse Training Config (8 classes, Stage 1)
+model_path: yolo11s-seg.pt
+data_yaml:  C:/Users/18447/Detector/data/kitchen_visor_coarse/data.yaml
+epochs: 100
+batch: 16
+imgsz: 640
+freeze: 5
+lr0: 0.01
+lrf: 0.01
+warmup_epochs: 3
+patience: 30
+workers: 8
+cache: false
+amp: true
+resume: false
+cos_lr: true
+label_smoothing: 0.1
+multi_scale: false
+copy_paste: 0.3
+mixup: 0.15
+mosaic: 1.0
+project: runs/kitchen_visor_coarse
+name: v1
+
+# Classes (8 coarse, alphabetical):
+# 0: appliance
+# 1: cabinet
+# 2: container
+# 3: cookware
+# 4: dishware
+# 5: hand
+# 6: lid
+# 7: utensil

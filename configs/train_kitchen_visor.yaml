@@ -1,0 +1,15 @@
+# Kitchen VISOR Training Config
+# Load this in the Training GUI to auto-fill all fields
+
+model_path: yolo11s-seg.pt
+data_yaml:  datasets/kitchen_visor/data.yaml
+epochs: 100
+batch: 8
+imgsz: 640
+freeze: 10
+lr0: 0.005
+project: runs/kitchen_visor
+name: v1
+
+# Reference only — not read by YOLO trainer directly
+# taxonomy defined in src/core/label_utils.py KITCHEN_TAXONOMY

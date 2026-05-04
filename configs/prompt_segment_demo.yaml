@@ -1,0 +1,369 @@
+detector:
+  backend: yolo_world_segformer
+  model_id: IDEA-Research/grounding-dino-tiny
+  groundingdino_checkpoint_path: models/groundingdino_swint_ogc.pth
+  roboflow_model_id: ""
+  yolo_world_model: models/yolov8s-worldv2.pt
+  yolo_world_image_size: 640
+  yolo_world_max_detections: 24
+  yolo_world_acceleration: none
+  yolo_world_export_if_missing: false
+  yolo_world_export_dir: models/optimized
+  yolo_world_export_half: true
+  yolo_world_export_int8: false
+  segformer_model_id: models/segformer_b0_ade
+  scene_prompt_labels:
+  - countertop
+  - kitchen counter
+  - stovetop
+  - cooktop
+  - electric range
+  - oven door
+  - cabinet
+  - cabinet door
+  - drawer
+  - sink
+  - faucet
+  - fridge door
+  - wall
+  - kitchen wall
+  - floor
+  - kitchen floor
+  - curtain
+  - backsplash
+  scene_min_area_ratio: 0.03
+  scene_min_confidence: 0.35
+  scene_max_detections: 6
+  rfdetr_model: rfdetr-small
+  rfdetr_weights_path: models/rf-detr-small.pth
+  device: auto
+  confidence_threshold: 0.18
+  box_threshold: 0.18
+  text_threshold: 0.18
+  groundingdino_nms_iou_threshold: 0.45
+  groundingdino_max_detections: 24
+  groundingdino_max_per_label: 4
+  groundingdino_per_label_enabled: true
+  groundingdino_per_label_core_labels:
+    - pot
+    - pan
+    - lid
+    - knob
+  groundingdino_resize_long_edge: 576
+  groundingdino_cookware_relaxed_iou_threshold: 0.82
+  groundingdino_cookware_merge_enabled: true
+  groundingdino_cookware_merge_min_cluster_size: 2
+  groundingdino_cookware_merge_overlap_threshold: 0.28
+  groundingdino_cookware_confidence_threshold: 0.10
+  groundingdino_cookware_box_threshold: 0.10
+  groundingdino_cookware_text_threshold: 0.10
+  fake_detections_path: ""
+
+segmenter:
+  backend: sam2
+  device: auto
+  sam2_checkpoint_path: models/sam2/sam2_hiera_tiny.pt
+  sam2_model_cfg: models/sam2/sam2_hiera_t.yaml
+  sam_checkpoint_path: ""
+  sam_model_type: vit_b
+  yolo_seg_model: models/yolov8n-seg.pt
+  yolo_seg_acceleration: auto
+  yolo_seg_export_if_missing: true
+  yolo_seg_export_dir: models/optimized
+  yolo_seg_export_half: true
+  yolo_seg_export_int8: false
+  min_mask_area: 100
+  mask_min_detection_confidence: 0.30
+  mask_track_refresh_interval: 3
+  mask_track_refresh_min_iou: 0.50
+  sam2_amg_points_per_side: 16
+  sam2_amg_points_per_batch: 64
+  sam2_amg_pred_iou_thresh: 0.8
+  sam2_amg_stability_score_thresh: 0.92
+  mask_refine_enabled: true
+  mask_refine_close_kernel: 5
+  mask_refine_smooth_kernel: 3
+  mask_refine_hole_area: 600
+
+runtime:
+  processing_mode: quality
+  frame_stride: 5
+  output_dir: outputs
+  preprocess_steps: []
+  use_byte_tracker: true
+  tracker_activation_threshold: 0.12
+  tracker_lost_buffer: 60
+  tracker_matching_threshold: 0.50
+  tracker_min_consecutive_frames: 1
+  tracker_recent_reassign_enabled: true
+  tracker_recent_reassign_labels:
+  - hand
+  - cookware
+  - dishware
+  - utensil
+  - pot
+  - pan
+  - saucepan
+  - plate
+  - bowl
+  - spoon
+  - knife
+  tracker_recent_reassign_iou_threshold: 0.35
+  tracker_recent_reassign_max_frame_gap: 4
+  coarse_tracking_labels_enabled: true
+  coarse_tracking_label_groups:
+    hand:
+    - hand
+    - arm
+    - person
+    cookware:
+    - cookware
+    - pot
+    - cooking pot
+    - saucepan
+    - pan
+    - frying pan
+    - wok
+    - kettle
+    - stovetop kettle
+    - tea kettle
+    - electric kettle
+    - pot lid
+    - pan lid
+    - lid
+    dishware:
+    - plate
+    - bowl
+    - dish
+    - cup
+    - mug
+    - glass
+    utensil:
+    - knife
+    - spoon
+    - fork
+    - ladle
+    - spatula
+    - tongs
+    - utensil
+    appliance:
+    - stove
+    - oven
+    - microwave
+    - toaster
+    - rice cooker
+  low_confidence_new_track_filter_enabled: true
+  low_confidence_new_track_min_confidence: 0.28
+  new_track_min_confidence_by_coarse_label:
+    cookware: 0.35
+    dishware: 0.40
+    utensil: 0.50
+    appliance: 0.45
+    hand: 0.30
+  use_label_smoothing: true
+  batch_inference_enabled: false
+  batch_inference_size: 6
+  label_smoothing_window: 12
+  label_smoothing_flip_streak_threshold: 3
+  label_smoothing_flip_confidence_gain: 0.05
+  detector_priority_labels:
+  - pot
+  - cooking pot
+  - saucepan
+  - pan
+  - frying pan
+  - pot lid
+  - pan lid
+  - lid
+  - hand
+  - bottle
+  - jar
+  - cup
+  - bowl
+  - plate
+  - box
+  - carton
+  - package
+  - container
+  - can
+  - spoon
+  - ladle
+  - spatula
+  - knife
+  detector_priority_filter_enabled: false
+  cookware_conflict_resolution_enabled: true
+  cookware_conflict_iou_threshold: 0.35
+  cookware_conflict_hand_iou_threshold: 0.05
+  use_hand_trigger: true
+  hand_trigger_model_path: models/mediapipe/hand_landmarker.task
+  hand_trigger_min_detection_confidence: 0.35
+  hand_trigger_grab_ratio_threshold: 0.66
+  hand_trigger_persistence_labels:
+  - lid
+  - pot lid
+  - pan lid
+  handheld_plate_proxy_iou_threshold: 0.01
+  handheld_plate_proxy_center_distance_scale: 1.4
+  persistence_enabled: true
+  persistence_labels:
+  - cookware
+  - pot
+  - pan
+  - saucepan
+  - lid
+  - pot lid
+  - pan lid
+  - hand
+  - background_unknown
+  - dishware
+  - utensil
+  persistence_max_frames: 3
+  hand_persistence_max_frames: 5
+  hand_persistence_confirmed_frames: 4
+  object_persistence_confirmed_frames: 2
+  hand_partial_offscreen_confidence_threshold: 0.48
+  persistence_min_stable_observations: 2
+  persistence_min_confidence: 0.18
+  persistence_confidence_decay: 0.92
+  stale_persistence_min_confidence: 0.16
+  utility_short_persistence_enabled: true
+  utility_short_persistence_labels:
+  - dishware
+  - utensil
+  - plate
+  - bowl
+  - spoon
+  - knife
+  utility_short_persistence_max_frames: 1
+  utility_short_persistence_min_confidence: 0.18
+  cookware_cold_start_persistence_enabled: true
+  cookware_cold_start_max_frames: 1
+  cookware_cold_start_min_confidence: 0.20
+  groundingdino_seed_persistence_enabled: true
+  groundingdino_seed_persistence_labels:
+  - bottle
+  - jar
+  - cup
+  - bowl
+  - plate
+  - box
+  - carton
+  - package
+  - container
+  - can
+  - lid
+  - pot lid
+  - pan lid
+  groundingdino_seed_persistence_max_frames: 4
+  groundingdino_seed_persistence_min_confidence: 0.16
+  use_memory_recovery: true
+  memory_min_stable_observations: 2
+  memory_min_confidence: 0.20
+  memory_max_recovery_frames: 7
+  memory_confirmed_max_recovery_age: 1
+  groundingdino_seed_memory_enabled: true
+  groundingdino_seed_memory_labels:
+  - bottle
+  - jar
+  - cup
+  - bowl
+  - plate
+  - box
+  - carton
+  - package
+  - container
+  - can
+  - lid
+  - pot lid
+  - pan lid
+  groundingdino_seed_memory_min_confidence: 0.16
+  use_secondary_region_detector: false
+  secondary_uncovered_ratio_threshold: 0.22
+  secondary_largest_component_ratio_threshold: 0.05
+  secondary_min_mask_area: 6000
+  secondary_max_regions: 4
+  secondary_accept_threshold: 0.42
+  secondary_margin_threshold: 0.08
+  secondary_min_predicted_iou: 0.78
+  secondary_frame_interval: 2
+  secondary_skip_if_detection_count_at_least: 6
+  secondary_memory_enabled: false
+  secondary_memory_accept_threshold: 0.58
+  secondary_memory_margin_threshold: 0.12
+  use_uncovered_region_redetect: true
+  uncovered_redetect_frame_interval: 1
+  uncovered_redetect_min_area_ratio: 0.025
+  uncovered_redetect_max_regions: 3
+  uncovered_redetect_expand_pixels: 12
+  uncovered_redetect_skip_iou_threshold: 0.18
+  uncovered_redetect_match_iou_threshold: 0.28
+  uncovered_redetect_priority_labels:
+  - pot
+  - pan
+  - saucepan
+  - lid
+  - pot lid
+  - pan lid
+  - hand
+  use_groundingdino_rescue: true
+  groundingdino_rescue_frame_interval: 16
+  groundingdino_rescue_include_uncovered: true
+  groundingdino_rescue_include_suspect: true
+  groundingdino_rescue_min_area_ratio: 0.02
+  groundingdino_rescue_expand_pixels: 20
+  groundingdino_rescue_max_regions: 4
+  groundingdino_rescue_max_suspect_tracks: 4
+  groundingdino_rescue_suspect_confidence_threshold: 0.42
+  groundingdino_rescue_priority_labels:
+  - pot
+  - cooking pot
+  - saucepan
+  - pan
+  - frying pan
+  - lid
+  - pot lid
+  - pan lid
+  - hand
+  - bottle
+  - jar
+  - box
+  - carton
+  - container
+  secondary_unknown_scene_promotion_enabled: true
+  secondary_unknown_scene_label: background_unknown
+  secondary_unknown_scene_min_area_ratio: 0.05
+  secondary_unknown_scene_require_border_touch: true
+  secondary_foreground_rescue_labels:
+  - pot
+  - pan
+  - saucepan
+  - lid
+  - pot lid
+  - pan lid
+  - hand
+  secondary_scene_labels:
+  - wall
+  - curtain
+  - floor
+  - kitchen floor
+  - backsplash
+  - kitchen wall
+  cross_group_bbox_iou_threshold: 0.60
+  cross_group_mask_iou_threshold: 0.50
+  cross_group_containment_threshold: 0.70
+  cross_group_confirmed_overlap_error_iou: 0.75
+  cookware_dishware_prefer_cookware_min_score: 0.30
+  cookware_dishware_prefer_cookware_score_margin: 0.20
+  conflict_overlap_track_threshold: 3
+  timing_warmup_frames: 1
+
+visualization:
+  draw_boxes: true
+  draw_masks: true
+  draw_labels: true
+  write_annotated_video: true
+
+export:
+  export_coco: true
+  save_mask_pngs: true
+  save_debug_frames: false
