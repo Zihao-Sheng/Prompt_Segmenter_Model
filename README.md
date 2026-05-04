@@ -12,7 +12,9 @@ A first-person video object segmentation tool built for kitchen and workflow mon
 
 ## Demo
 
-[Watch annotated video](https://github.com/Zihao-Sheng/Prompt_Segmenter_Model/blob/main/annotated_video.mp4)
+[![Annotated video demo](demo.png)](https://github.com/Zihao-Sheng/Prompt_Segmenter_Model/blob/main/annotated_video.mp4)
+
+[Watch the annotated MP4 demo](https://github.com/Zihao-Sheng/Prompt_Segmenter_Model/blob/main/annotated_video.mp4)
 
 
 ---
