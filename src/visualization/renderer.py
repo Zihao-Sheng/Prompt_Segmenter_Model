@@ -6,6 +6,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from src.auto_label.label_hierarchy import label_for_display
 from ..core.types import Detection, SegmentationMask
 
 
@@ -88,6 +89,7 @@ def draw_annotations(
     draw_masks: bool,
     draw_labels: bool,
     highlighted_detection: dict[str, Any] | None = None,
+    label_display_mode: str = "coarse_fine",
 ) -> Any:
     canvas = frame.copy()
     if draw_masks:
@@ -121,7 +123,8 @@ def draw_annotations(
             track_id = detection.attributes.get("track_id")
             track_text = f" #{int(track_id)}" if track_id is not None else ""
             memory_text = " [mem]" if detection.source == "memory_sam" else ""
-            label = f"{detection.label}{track_text}{memory_text} {detection.confidence:.2f}"
+            display_label = label_for_display(detection.label, label_display_mode)
+            label = f"{display_label}{track_text}{memory_text} {detection.confidence:.2f}"
             cv2.putText(canvas, label, (x1, max(20, y1 - 8)), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 1)
 
     if not detections:

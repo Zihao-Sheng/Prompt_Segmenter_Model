@@ -1,0 +1,366 @@
+# Auto-Label Pipeline Configuration
+# Use with: python scripts/auto_label/<script>.py  (each script accepts its own CLI args)
+# This file documents the canonical settings for the kitchen demo run.
+
+input:
+  videos_root:  data/raw_videos
+  frames_root:  data/auto_label_demo/frames
+  metadata_path: data/auto_label_demo/metadata/frames_metadata.json
+
+frame_extraction:
+  frame_stride: 60        # full EGTEA pass: sample about 0.5 fps from 30 fps source
+  max_frames: 0           # 0 = unlimited frames for full-dataset runs
+  start_time: 0.0         # seconds
+  end_time: 0.0           # 0 = end of video
+
+proposal_generation:
+  # backend options:
+  #   mock              — no GPU, deterministic, for smoke testing / CI
+  #   groundingdino_sam2 — real GroundingDINO + SAM2 (recommended)
+  #                        falls back to bbox-only if SAM2 unavailable
+  backend: groundingdino_sam2
+
+  # Model weight paths — defaults resolve to models/ in this repo
+  # All weights are already downloaded; no changes needed.
+  detector_model_path: models/groundingdino_swint_ogc.pth
+  sam2_checkpoint:     models/sam2/sam2_hiera_tiny.pt
+  sam2_config:         models/sam2/sam2_hiera_t.yaml
+
+  prompts:
+    # hands
+    - hand
+    - glove
+
+    # cookware
+    - pot
+    - pan
+    - lid
+    - cookware
+    - tray
+    - kettle
+
+    # dishware
+    - bowl
+    - plate
+    - cup
+    - glass
+    - bottle
+    - jar
+
+    # containers / packages
+    - container
+    - box
+    - package
+    - bag
+    - carton
+    - can
+
+    # utensils
+    - knife
+    - fork
+    - spoon
+    - spatula
+    - tongs
+    - ladle
+    - whisk
+    - peeler
+    - scissors
+    - cutting board
+
+    # ingredients / food
+    - pasta
+    - noodles
+    - rice
+    - bread
+    - vegetable
+    - fruit
+    - meat
+    - fish
+    - egg
+    - cheese
+    - ingredient
+    - food
+    - dry food
+    - liquid
+    - water
+    - milk
+    - sauce
+    - oil
+    - powder
+    - sugar
+    - salt
+
+    # kitchen scene
+    - sink
+    - faucet
+    - stove
+    - cooktop
+    - oven
+    - microwave
+    - fridge
+    - drawer
+    - cabinet
+    - countertop
+    - table
+    - rack
+    - sponge
+    - towel
+
+  prompt_groups:
+    hands:
+      - hand
+      - glove
+    cookware:
+      - pot
+      - pan
+      - lid
+      - cookware
+      - tray
+      - kettle
+    dishware:
+      - bowl
+      - plate
+      - cup
+      - glass
+      - bottle
+      - jar
+    dishware_containers:
+      - container
+      - box
+      - package
+      - bag
+      - carton
+      - can
+    utensils_tools:
+      - knife
+      - fork
+      - spoon
+      - spatula
+      - tongs
+      - ladle
+      - whisk
+      - peeler
+      - scissors
+      - cutting board
+    ingredients_food:
+      - pasta
+      - noodles
+      - rice
+      - bread
+      - vegetable
+      - fruit
+      - meat
+      - fish
+      - egg
+      - cheese
+      - ingredient
+      - food
+      - dry food
+    condiments_spreads:
+      - sauce
+      - oil
+      - powder
+      - sugar
+      - salt
+    drinks:
+      - liquid
+      - water
+      - milk
+    appliances_scene:
+      - sink
+      - faucet
+      - stove
+      - cooktop
+      - oven
+      - microwave
+      - fridge
+      - drawer
+      - cabinet
+      - countertop
+      - table
+      - rack
+      - sponge
+      - towel
+
+  confidence_threshold: 0.25
+  box_threshold: 0.25        # GroundingDINO box score (default = confidence_threshold)
+  text_threshold: 0.20       # GroundingDINO text score
+  max_objects_per_frame: 40
+
+  # Debug visualisation
+  save_debug_vis: true
+  debug_vis_limit: 100       # max debug images to save (0 = unlimited)
+
+  # Compute reduction tips (RTX 4060 laptop / limited VRAM):
+  # 1. Increase frame_extraction.frame_stride (e.g. 30) to process fewer frames
+  # 2. Lower max_objects_per_frame to 10–15
+  # 3. Lower confidence_threshold to 0.30+ to reduce false positives
+  # 4. Use device: cpu if CUDA OOM (slow but safe for small batches)
+  # 5. Reduce max_frames to 500 for quick iteration
+
+embedding:
+  model: clip             # or: dinov2
+  batch_size: 32
+  device: cuda            # or: cpu
+  resize: 224
+
+clustering:
+  method: hdbscan
+  safe_mode: true
+  num_clusters: 50
+  normalize: true
+  group_by_predicted_label: false
+  group_field: predicted_label
+  fallback_to_kmeans: false
+  safe_mode_settings:
+    group_by_coarse_label: true
+    max_direct_hdbscan_size: 50000
+    large_group_bucketing: true
+    target_bucket_size: 20000
+    max_bucket_size: 30000
+    save_intermediate: true
+    fallback_to_kmeans: false
+    resume: true
+  pca:
+    enabled: true
+    n_components: 32
+    random_state: 42
+  umap:
+    enabled: false
+    n_components: 15
+    n_neighbors: 30
+    min_dist: 0.0
+    metric: cosine
+    random_state: 42
+  hdbscan:
+    min_cluster_size: 30
+    min_samples: 10
+    metric: euclidean
+    cluster_selection_method: eom
+    prediction_data: true
+  class_groups:
+    hand:
+      - hand
+      - glove
+    cookware:
+      - pot
+      - pan
+      - lid
+      - cookware
+      - tray
+      - kettle
+    dishware:
+      - bowl
+      - plate
+      - cup
+      - glass
+    container:
+      - bottle
+      - jar
+      - container
+      - box
+      - package
+      - bag
+      - carton
+      - can
+    utensil:
+      - knife
+      - fork
+      - spoon
+      - spatula
+      - tongs
+      - ladle
+      - whisk
+      - peeler
+      - scissors
+      - cutting board
+    ingredient:
+      - pasta
+      - noodles
+      - rice
+      - bread
+      - vegetable
+      - fruit
+      - meat
+      - fish
+      - egg
+      - cheese
+      - ingredient
+      - food
+      - dry food
+      - liquid
+      - water
+      - milk
+      - sauce
+      - oil
+      - powder
+      - sugar
+      - salt
+    kitchen_scene:
+      - sink
+      - faucet
+      - stove
+      - cooktop
+      - oven
+      - microwave
+      - fridge
+      - drawer
+      - cabinet
+      - countertop
+      - table
+      - rack
+      - sponge
+      - towel
+    unknown: []
+  use_umap: false         # legacy option for FiftyOne visualisation
+
+fiftyone:
+  dataset_name: auto_label_demo
+  launch_app: false
+
+export:
+  format: yolo-seg        # or: coco  or: both
+  val_ratio: 0.2
+  seed: 42
+
+training:
+  model: yolo11s-seg.pt   # nano=yolo11n, small=yolo11s, medium=yolo11m
+  epochs: 30
+  imgsz: 640
+  batch: 8
+  device: 0               # GPU index; use 'cpu' if no GPU
+  project: outputs/auto_label_yolo
+  name: demo_yolo11s_seg
+  patience: 10
+  workers: 4
+
+review:
+  grid_rows: 5
+  grid_cols: 5
+  thumbnail_size: 128
+  autosave: true
+  include_uncertain_on_export: false
+  use_memory_labels_if_unreviewed: false
+  exclude_memory_suggested_noise: true
+  mask_opacity: 45
+  scene_cleanup:
+    min_area: 500
+    close_kernel: 15
+    keep_largest_component: true
+    bbox_fallback_min_coverage: 0.18
+  foreground_cleanup:
+    min_area: 50
+
+memory:
+  enabled: true
+  memory_bank_path: data/auto_label_demo/memory_bank
+  active_max_per_label: 500
+  active_max_negative: 1000
+  similarity_top_k: 5
+  positive_threshold: 0.72
+  negative_threshold: 0.78
+  auto_delete_threshold: 0.85
+  use_faiss: true
+  fallback_bruteforce: true
+  use_memory_labels_if_unreviewed: false
+  exclude_memory_suggested_noise: true

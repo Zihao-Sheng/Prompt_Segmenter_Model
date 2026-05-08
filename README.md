@@ -9,6 +9,7 @@ A first-person video object segmentation tool built for kitchen and workflow mon
 - ByteTrack multi-object tracking + temporal label smoothing
 - COCO-format annotation export
 - Separate training GUI for fine-tuning YOLO11-seg on custom datasets
+- Auto-label GUI for offline mask proposals, object embeddings, clustering, cluster review, pseudo-label export, and YOLO11-seg training
 
 ## Demo
 
@@ -21,10 +22,27 @@ A first-person video object segmentation tool built for kitchen and workflow mon
 
 ## Table of Contents
 
+- [Project Pause Snapshot](#project-pause-snapshot)
 - [Quick Start](#quick-start)
 - [Directory Structure](#directory-structure)
+- [Auto-Label Program](#auto-label-program)
 - [Datasets](#datasets)
 - [Research Background](#hangar-maintenance-workflow-monitoring-project-research-progress-summary)
+
+---
+
+## Project Pause Snapshot
+
+The project was archived on 2026-05-08 so it can be paused and resumed later.
+Lightweight, reproducible files are kept in Git; generated data, run outputs,
+model weights, virtual environments, and caches are local-only.
+
+Useful archive notes:
+
+- `docs/project_archive_2026-05-08.md`: what was kept, ignored, and moved.
+- `notebooks/README.md`: renamed notebook experiment index.
+- `models/root_imports/`: local holding folder for loose root-level weights,
+  ignored by Git.
 
 ---
 
@@ -45,6 +63,7 @@ Prompt_Segmenter_Model/
 │   └── ...
 │
 ├── scripts/                    # Utility scripts
+│   ├── auto_label/             # Offline auto-label pipeline scripts
 │   ├── download_models.py      # Downloads weights from GitHub Releases
 │   └── visor_to_yolo.py        # Converts VISOR annotations to YOLO format
 │
@@ -55,9 +74,11 @@ Prompt_Segmenter_Model/
 │   ├── tracking/               # ByteTrack + label smoothing + hand trigger
 │   ├── pipeline/               # Frame processing pipeline and export
 │   ├── gui/                    # Training GUI
+│   ├── auto_label/             # Cluster review and memory-assisted review tools
 │   └── core/                   # Config loading, types, utilities
 │
 ├── Launch_GUI.bat              # Start the inference GUI
+├── Launch_AutoLabel_GUI.bat    # Start the offline auto-label GUI
 ├── Launch_Training_Tool.bat    # Start the training GUI
 ├── Install_Dependencies.bat    # Set up venv and install packages
 └── Download_Models.bat         # Download model weights from GitHub Releases
@@ -178,6 +199,81 @@ hand, pot, pan, lid, bowl, plate, spoon, knife, cup, bottle
 3. **Video** — pick any `.mp4` / `.avi` file
 4. **Prompt** — enter object names (see examples above)
 5. Click **Start**
+
+---
+
+## Auto-Label Program
+
+The repo also includes an offline auto-labeling program for building training data when a new domain does not already have mask annotations. It is intended for the future maintenance/hangar workflow, while the current demo uses EGTEA kitchen videos as a substitute.
+
+Launch it with:
+
+```bash
+Launch_AutoLabel_GUI.bat
+```
+
+Reference config:
+
+```text
+configs/auto_label_demo.yaml
+```
+
+Current pipeline overview:
+
+```mermaid
+flowchart TD
+    A[Raw videos or image frames] --> B[1. Frame extraction]
+    B --> C[Frame metadata<br/>video, frame index, timestamp, frame path]
+    C --> D[2. Heavy model proposal generation<br/>GroundingDINO / YOLO-World + SAM2]
+    D --> E[3. Object crop and mask export<br/>bbox, mask, confidence, raw label, proposal_id]
+    E --> F[4. Object embedding extraction<br/>CLIP or DINOv2]
+    F --> G[5. Embedding preprocessing<br/>L2 normalize, optional PCA, optional UMAP]
+    G --> H{6. Clustering}
+    H --> I[KMeans<br/>fixed cluster count, assigns every proposal]
+    H --> J[HDBSCAN<br/>automatic cluster count, marks noise as cluster_id = -1]
+    I --> K[7. Cluster metadata export]
+    J --> K
+    K --> L[object_metadata_clustered.csv/parquet<br/>cluster_id, method, probability, outlier score, is_noise]
+    L --> M[8. Review-ready outputs<br/>cluster summary, cluster labels, clusters.csv]
+    M --> N[Cluster Review UI<br/>relabel, delete, split, merge, correct]
+    N --> O[Clean pseudo-label export<br/>YOLO-seg or COCO]
+    O --> P[Train lightweight YOLO11-seg model]
+```
+
+In short, the program uses heavy models offline to over-generate object masks, converts those masks into object crops and embeddings, then groups similar objects so a human can review clusters instead of labeling every frame. HDBSCAN is useful at this stage because it does not need a predefined cluster count and can isolate dirty proposals, shadows, reflections, background fragments, or bad masks as `cluster_id = -1`.
+
+Important generated files:
+
+```text
+data/auto_label_demo/proposals/proposals.jsonl
+data/auto_label_demo/proposals/crops/
+data/auto_label_demo/proposals/masks/
+data/auto_label_demo/embeddings/object_embeddings.npy
+data/auto_label_demo/embeddings/object_metadata.csv
+data/auto_label_demo/embeddings/object_metadata_clustered.csv
+data/auto_label_demo/cluster_review/cluster_summary.csv
+data/auto_label_demo/cluster_review/cluster_labels.csv
+data/auto_label_demo/cluster_review/clusters.csv
+data/auto_label_demo/pseudo_labels/
+data/auto_label_demo/yolo_dataset/
+```
+
+The clustering stage supports both:
+
+- `kmeans`: fast baseline when you know roughly how many clusters you want.
+- `hdbscan`: better for noisy proposal sets because it can mark outliers as `cluster_id = -1`.
+
+For HDBSCAN clustering, install:
+
+```bash
+python -m pip install hdbscan
+```
+
+Useful docs:
+
+- `docs/auto_label_pipeline.md` explains each pipeline phase and command-line script.
+- `docs/clustering_methods.md` explains KMeans vs HDBSCAN outputs and tuning.
+- `docs/cluster_review_and_memory.md` explains the cluster review UI, memory suggestions, split/merge, and cleaned export flow.
 
 ---
 
@@ -679,6 +775,8 @@ The idea is:
 
 This turns heavy models into an **offline annotation engine**, not the final real-time model.
 
+This direction is now implemented in the repo as the auto-label program. The GUI entry point is `Launch_AutoLabel_GUI.bat`, and the command-line stages live under `scripts/auto_label/`. The implementation writes intermediate artifacts under `data/auto_label_demo/`, including proposals, crops, masks, embeddings, clustered metadata, cluster review CSVs, pseudo-labels, and exported YOLO/COCO training datasets.
+
 ### 4.3 Clustering Unknown Objects
 
 **Clustering** is an unsupervised learning method that groups similar samples together. In this context, each segmented object crop or mask can be represented by visual features, and similar objects can be grouped into the same cluster.
@@ -930,3 +1028,81 @@ The current fourth stage focuses on automatic labeling for the future hangar mai
 The main conclusion is:
 
 > For real-time maintenance workflow monitoring, the best route is likely not to run a large VLM or heavy open-vocabulary model directly. Instead, we should use heavy models offline to create training labels, then fine-tune a lightweight segmentation model for fast and stable runtime perception.
+
+---
+
+## Memory Auto-Label Folder Runner
+
+This repo also includes a standalone first-pass GUI for testing an iterative
+memory-based video auto-labeling workflow. It is separate from the training GUI
+and does not fine-tune DINO, GroundingDINO, or SAM2 weights.
+
+Launch:
+
+```bash
+python run_memory_autolabel_gui.py
+```
+
+The GUI processes a selected video folder in small rounds. Default settings are:
+
+- DINO/GroundingDINO-style bbox threshold: `0.20`
+- `videos_per_round`: `3`
+- `frame_stride`: `10`
+- `max_sampled_frames_per_video`: `150`
+- VLM review threshold: `quality_score < 0.65`
+- auto accept threshold: `quality_score >= 0.80`
+- reject threshold: `quality_score < 0.45`
+
+Outputs are written under the selected output folder:
+
+```text
+output_folder/
+  run_config.json
+  processed_videos.json
+  run_logs/
+  memory/
+    object_memory.jsonl
+    failure_memory.jsonl
+    track_memory.jsonl
+    prompt_policy_memory.jsonl
+    embeddings/
+  rounds/
+    round_001/
+      video_name/
+        sampled_frames/
+        overlays_initial/
+        overlays_repaired/
+        masks/
+        crops/
+        vlm_packets/
+        vlm_responses/
+        pseudo_labels_initial.jsonl
+        pseudo_labels_repaired.jsonl
+        quality_scores.jsonl
+        video_summary.json
+  dataset_export/
+    images/
+    masks/
+    labels.jsonl
+```
+
+Current implementation status:
+
+- The GUI, queue, round progression, progress bars, live logs, restart state,
+  summaries, memory files, and output folder structure are implemented.
+- Heavy model interfaces are modular adapters:
+  `DetectorRunner.detect`, `SAM2Runner.segment`, `VLMReviewer.review`,
+  `MemoryStore.query`, and `QualityScorer.score`.
+- GroundingDINO and SAM2 are wired in when their local packages/checkpoints are
+  available. If either backend fails to load, the app logs the reason and falls
+  back to lightweight proposals or bbox masks so the run can continue.
+- Optional embedding memory uses a local Hugging Face CLIP/SigLIP-style image
+  model when available, with a deterministic color-histogram fallback.
+- Optional VLM review is wired for local Qwen2.5-VL JSON-only responses. If the
+  model is unavailable, review packets are still saved and a conservative stub
+  response is used.
+- VLM bbox/label repair can re-prompt SAM2 and accepts the repair only when the
+  post-repair quality score and area sanity checks pass.
+- Adaptive stride currently uses a simple motion heuristic to add denser samples
+  around high-motion segments.
+- Memory updates are external JSONL files only; no model weights are updated.

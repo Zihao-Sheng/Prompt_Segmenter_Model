@@ -1,11 +1,14 @@
 # Virtual environment
 .venv/
+.venv*/
 
 # Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.pytest_cache/
+pytest-cache-files-*/
 
 # Model weights (host on GitHub Releases separately)
 models/
@@ -13,10 +16,20 @@ models/
 *.pth
 *.onnx
 *.engine
+*.bin
+*.safetensors
+*.h5
+*.task
 
-# Training outputs
+# Generated data and outputs
 runs/
 outputs/
+data/
+tmp/
+notebooks/outputs/
+_sam2_tmp_*/
+.hf_modules_cache/
+*.mp4
 
 # Ultralytics config cache
 Ultralytics/

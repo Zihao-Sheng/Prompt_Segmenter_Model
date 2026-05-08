@@ -1040,6 +1040,7 @@ def run_prompt_video_segmentation(
                 draw_boxes=bool(config.get("visualization", {}).get("draw_boxes", True)),
                 draw_masks=bool(config.get("visualization", {}).get("draw_masks", True)),
                 draw_labels=bool(config.get("visualization", {}).get("draw_labels", True)),
+                label_display_mode=str(config.get("visualization", {}).get("label_display_mode", "coarse_fine")),
             )
             timing["draw_ms"] = (perf_counter() - stage_t0) * 1000.0
 

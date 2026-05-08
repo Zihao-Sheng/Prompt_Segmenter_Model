@@ -327,6 +327,7 @@ DEFAULT_CONFIG = {
         "draw_boxes": True,
         "draw_masks": True,
         "draw_labels": True,
+        "label_display_mode": "coarse_fine",
         "write_annotated_video": True,
     },
     "export": {
